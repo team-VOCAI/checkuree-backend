@@ -96,3 +96,81 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+erDiagram
+    USERS ||--o{ ROSTERS : "owns"
+    ROSTERS ||--o{ ROSTER_STUDENTS : "has"
+    STUDENTS ||--o{ ROSTER_STUDENTS : "enrolls"
+    ROSTER_STUDENTS ||--o{ LESSON_SCHEDULES : "has"
+    ROSTER_STUDENTS ||--o{ STUDENT_CURRICULUM_HISTORY : "tracks"
+    CURRICULA ||--o{ STUDENT_CURRICULUM_HISTORY : "referenced by"
+    ROSTER_STUDENTS ||--o{ ATTENDANCE : "marks"
+
+    USERS {
+      bigint id PK
+      text name
+      text email UNIQUE
+      timestamptz created_at
+    }
+
+    ROSTERS {
+      bigint id PK
+      bigint user_id FK -> USERS.id
+      text title
+      text memo
+      timestamptz created_at
+    }
+
+    STUDENTS {
+      bigint id PK
+      text name
+      text phone
+      text memo
+      timestamptz created_at
+    }
+
+    ROSTER_STUDENTS {
+      bigint id PK
+      bigint roster_id FK -> ROSTERS.id
+      bigint student_id FK -> STUDENTS.id
+      date   enrolled_at
+      boolean is_active
+      UNIQUE (roster_id, student_id)
+    }
+
+    LESSON_SCHEDULES {
+      bigint id PK
+      bigint roster_student_id FK -> ROSTER_STUDENTS.id
+      smallint weekday  "0=Sun ... 6=Sat"
+      time start_time
+      time end_time
+      text room
+      boolean is_active
+    }
+
+    CURRICULA {
+      bigint id PK
+      text name UNIQUE
+      text description
+    }
+
+    STUDENT_CURRICULUM_HISTORY {
+      bigint id PK
+      bigint roster_student_id FK -> ROSTER_STUDENTS.id
+      bigint curriculum_id FK -> CURRICULA.id
+      date start_date
+      date end_date NULL  "NULL = current"
+      text level_note
+    }
+
+    ATTENDANCE {
+      bigint id PK
+      bigint roster_student_id FK -> ROSTER_STUDENTS.id
+      date lesson_date
+      text status "present | absent | late | excused"
+      timestamptz checkin_at
+      timestamptz checkout_at
+      text memo
+      UNIQUE (roster_student_id, lesson_date)
+    }
