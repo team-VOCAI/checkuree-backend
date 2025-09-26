@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model USERS {
+  userId     Int       @id @default(autoincrement())
+  username   String    @unique
+  password   String
+  name       String
+  createdAt  DateTime  @db.Date
+  deletedAt  DateTime? @db.Date
+
+  // 1:N로 변경
+  BOOKS      BOOKS[]
+  COUNSELEES COUNSELEES[]
+}
+
+model BOOKS {
+  bookId        Int      @id @default(autoincrement())
+  userId        Int      
+  title         String   @unique
+  description   String?
+  availableFrom String
+  availableTo   String
+  availableDays String[]
+  courses       Int[]
+
+  user       USERS       @relation(fields: [userId], references: [userId])
+  ATTENDEES  ATTENDEES[]
+  FILES      FILES[]
+}
+
+model ATTENDEES {
+  attendeeId     Int       @id @default(autoincrement())
+  bookId         Int
+  name           String
+  actualName     String
+  gender         String
+  birthDate      DateTime  @db.Date
+  enrollmentDate DateTime  @db.Date
+  school         String
+  isBeginner     Boolean
+  address_1      String
+  initialGradeId Int
+  gradeId        Int
+  associates     String[]
+  description    String?
+  status         String
+  schedules      String[]
+  progress       String[]
+
+  book         BOOKS   @relation(fields: [bookId], references: [bookId])
+  initialGrade GRADES  @relation("AttendeeInitialGrade", fields: [initialGradeId], references: [gradeId])
+  grade        GRADES  @relation("AttendeeGrade",        fields: [gradeId],        references: [gradeId])
+
+  CURRICULUMS  CURRICULUMS[]
+  RECORDS      RECORDS[]
+  COUNSELLING  COUNSELLING[]
+  REPORTS      REPORTS[]
+}
+
+model COURSES {
+  courseId      Int    @id @default(autoincrement())
+  title         String
+  subjectItemId Int
+
+  GRADES GRADES[]
+}
+
+model GRADES {
+  gradeId  Int  @id @default(autoincrement())
+  courseId Int
+  level    Int
+
+  course             COURSES    @relation(fields: [courseId], references: [courseId])
+  attendeesAsInitial ATTENDEES[] @relation("AttendeeInitialGrade")
+  attendeesAsCurrent ATTENDEES[] @relation("AttendeeGrade")
+  CURRICULUMS        CURRICULUMS[]
+}
+
+model CURRICULUMS {
+  curriculumId Int       @id @default(autoincrement())
+  attendeeId   Int
+  gradeId      Int
+  startedAt    DateTime  @db.Date
+  endedAt      DateTime? @db.Date
+
+  attendee ATTENDEES @relation(fields: [attendeeId], references: [attendeeId])
+  grade    GRADES    @relation(fields: [gradeId], references: [gradeId])
+}
+
+model RECORDS {
+  recordId   Int      @id @default(autoincrement())
+  attendeeId Int
+  date       DateTime @db.Date
+  startedAt  String
+  endAt      String
+  attendance Boolean
+  status     String
+  isTaught   Boolean
+
+  attendee ATTENDEES @relation(fields: [attendeeId], references: [attendeeId])
+}
+
+model COUNSELLING {
+  counsellingId Int       @id @default(autoincrement())
+  attendeeId    Int
+  counseleeId   Int
+  type          String
+  topics        String[]
+  counsellingAt DateTime  @db.Date
+  description   String
+
+  attendee  ATTENDEES  @relation(fields: [attendeeId], references: [attendeeId])
+  counselee COUNSELEES @relation(fields: [counseleeId], references: [counseleeId])
+}
+
+model COUNSELEES {
+  counseleeId Int    @id @default(autoincrement())
+  userId      Int
+
+  user        USERS        @relation(fields: [userId], references: [userId])
+  COUNSELLING COUNSELLING[]
+}
+
+model FILES {
+  fileId        Int    @id @default(autoincrement())
+  bookId        Int
+  kind          String
+  fileName      String
+  extension     String
+  needThumbnail Boolean
+
+  book BOOKS @relation(fields: [bookId], references: [bookId])
+}
+
+model REPORTS {
+  reportId          Int    @id @default(autoincrement())
+  attendeeId        Int
+  reportYear        Int
+  reportMonth       Int
+  additionalContext String?
+
+  attendee ATTENDEES @relation(fields: [attendeeId], references: [attendeeId])
+
+  // 원하면 월간 중복 방지
+  // @@unique([attendeeId, reportYear, reportMonth])
+}
