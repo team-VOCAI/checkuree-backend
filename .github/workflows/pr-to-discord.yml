@@ -1,0 +1,81 @@
+name: Notify Discord on PR Events
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+    types: [opened, closed, reopened, synchronize]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify on PR Open
+        if: github.event.action == 'opened'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            🔔 **새 Pull Request!**
+            - **대상 브랜치:** `${{ github.event.pull_request.base.ref }}`
+            - **제목:** `${{ github.event.pull_request.title }}`
+            - **작성자:** `${{ github.event.pull_request.user.login }}`
+            - **설명:** 
+            > ${{ github.event.pull_request.body }}
+            [🔗 PR 바로가기](${{ github.event.pull_request.html_url }})
+
+      - name: Notify on PR Reopen
+        if: github.event.action == 'reopened'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            ♻️ **PR이 다시 열렸습니다!**
+            - **대상 브랜치:** `${{ github.event.pull_request.base.ref }}`
+            - **제목:** `${{ github.event.pull_request.title }}`
+            - **작성자:** `${{ github.event.pull_request.user.login }}`
+            [🔗 PR 바로가기](${{ github.event.pull_request.html_url }})
+
+      - name: Notify on PR Update
+        if: github.event.action == 'synchronize'
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            ✏️ **PR이 업데이트 되었습니다!**
+            - **대상 브랜치:** `${{ github.event.pull_request.base.ref }}`
+            - **제목:** `${{ github.event.pull_request.title }}`
+            - **작성자:** `${{ github.event.pull_request.user.login }}`
+            [🔗 PR 바로가기](${{ github.event.pull_request.html_url }})
+
+      - name: Notify on PR Merge
+        if: github.event.pull_request.merged == true
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            ✅ **PR이 머지되었습니다!**
+            - **대상 브랜치:** `${{ github.event.pull_request.base.ref }}`
+            - **제목:** `${{ github.event.pull_request.title }}`
+            - **작성자:** `${{ github.event.pull_request.user.login }}`
+            - **설명:** 
+            > ${{ github.event.pull_request.body }}
+            [🔗 PR 바로가기](${{ github.event.pull_request.html_url }})
+
+      - name: Notify on PR Close (Not Merged)
+        if: github.event.action == 'closed' && github.event.pull_request.merged != true
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: |
+            ⚠️ **PR이 머지 없이 닫혔습니다.**
+            - **대상 브랜치:** `${{ github.event.pull_request.base.ref }}`
+            - **제목:** `${{ github.event.pull_request.title }}`
+            - **작성자:** `${{ github.event.pull_request.user.login }}`
+            [🔗 PR 바로가기](${{ github.event.pull_request.html_url }})
