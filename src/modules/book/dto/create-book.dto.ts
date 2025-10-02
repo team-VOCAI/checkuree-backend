@@ -58,12 +58,12 @@ export class CreateBookDto {
   @IsArray()
   @ArrayMinSize(1)
   @IsEnum(DayOfWeek, { each: true })
-  @ArrayUnique()          // 요일 중복 방지
+  @ArrayUnique()
   availableDays: DayOfWeek[];
 
   @IsArray()
   @ArrayMinSize(1)
-  @ArrayUnique((c: CreateCourseDto) => (c.title || '').trim().toLowerCase()) // 코스명 중복 방지
+  @ArrayUnique((c: CreateCourseDto) => (c.title || '').trim().toLowerCase())
   @ValidateNested({ each: true })
   @Type(() => CreateCourseDto)
   courses: CreateCourseDto[];
