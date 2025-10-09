@@ -1,6 +1,6 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateAttendeeDto } from './dto/create-attendee.dto';
+import { AttendeeAssociateDto, CreateAttendeeDto } from './dto/create-attendee.dto';
 
 // 실제 데이터베이스 작업과 비즈니스 규칙을 처리하는 서비스 클래스입니다.
 // NestJS에서는 컨트롤러가 요청을 받고, 서비스가 실질적인 로직을 담당하는 패턴이 일반적입니다.
@@ -61,6 +61,38 @@ export class AttendeesService {
     });
 
     return attendee;
+  }
+
+  async getAttendee(bookId: number, attendeeId: number) {
+    const attendee = await this.prisma.aTTENDEES.findFirst({
+      where: { attendeeId, bookId },
+      include: {
+        book: true,
+        initialGrade: true,
+        grade: true,
+      },
+    });
+
+    if (!attendee) {
+      throw new NotFoundException(
+        `Attendee with id ${attendeeId} not found in book ${bookId}`,
+      );
+    }
+
+    const associates = attendee.associates
+      .map((associate) => {
+        try {
+          return JSON.parse(associate) as AttendeeAssociateDto;
+        } catch {
+          return null;
+        }
+      })
+      .filter((associate): associate is AttendeeAssociateDto => associate !== null);
+
+    return {
+      ...attendee,
+      associates,
+    };
   }
 
   // GRADES 테이블에 학년이 존재하는지 확인하는 보조 메서드입니다.

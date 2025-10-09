@@ -1,6 +1,7 @@
 ﻿import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -39,5 +40,19 @@ export class AttendeesController {
 
     // 공통 포맷을 맞추기 위해 ResponseUtil.success()를 사용합니다.
     return ResponseUtil.success(attendee, 'Attendee created successfully');
+  }
+
+  // GET /book/:bookId/attendee/:attendeeId handles attendee detail retrieval.
+  @Get(':attendeeId')
+  async getAttendee(
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Param('attendeeId', ParseIntPipe) attendeeId: number,
+  ) {
+    const attendee = await this.attendeesService.getAttendee(
+      bookId,
+      attendeeId,
+    );
+
+    return ResponseUtil.success(attendee, 'Attendee retrieved successfully');
   }
 }
