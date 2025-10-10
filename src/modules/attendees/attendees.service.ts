@@ -1,6 +1,8 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AttendeeAssociateDto, CreateAttendeeDto } from './dto/create-attendee.dto';
+import { UpdateAttendeeDto } from './dto/update-attendee.dto';
+import { UpdateAttendeeStatusDto } from './dto/update-attendee-status.dto';
 
 // 실제 데이터베이스 작업과 비즈니스 규칙을 처리하는 서비스 클래스입니다.
 // NestJS에서는 컨트롤러가 요청을 받고, 서비스가 실질적인 로직을 담당하는 패턴이 일반적입니다.
@@ -93,6 +95,68 @@ export class AttendeesService {
       ...attendee,
       associates,
     };
+  }
+
+  async listAttendees(bookId: number) {
+    const attendees = await this.prisma.aTTENDEES.findMany({
+      where: { bookId },
+      select: {
+        attendeeId: true,
+        name: true,
+      },
+      orderBy: { attendeeId: 'asc' },
+    });
+
+    return attendees;
+  }
+
+  async updateAttendee(
+    bookId: number,
+    attendeeId: number,
+    dto: UpdateAttendeeDto,
+  ) {
+    const existing = await this.prisma.aTTENDEES.findFirst({
+      where: { attendeeId, bookId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(
+        `Attendee with id ${attendeeId} not found in book ${bookId}`,
+      );
+    }
+
+    await this.prisma.aTTENDEES.update({
+      where: { attendeeId },
+      data: {
+        name: dto.name,
+      },
+    });
+
+    return this.getAttendee(bookId, attendeeId);
+  }
+
+  async updateAttendeeStatus(
+    bookId: number,
+    dto: UpdateAttendeeStatusDto,
+  ) {
+    const existing = await this.prisma.aTTENDEES.findFirst({
+      where: { attendeeId: dto.attendeeId, bookId },
+    });
+
+    if (!existing) {
+      throw new NotFoundException(
+        `Attendee with id ${dto.attendeeId} not found in book ${bookId}`,
+      );
+    }
+
+    await this.prisma.aTTENDEES.update({
+      where: { attendeeId: dto.attendeeId },
+      data: {
+        status: dto.status,
+      },
+    });
+
+    return this.getAttendee(bookId, dto.attendeeId);
   }
 
   // GRADES 테이블에 학년이 존재하는지 확인하는 보조 메서드입니다.
