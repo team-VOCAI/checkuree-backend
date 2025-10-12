@@ -1,7 +1,8 @@
+// 현재 예시용 코드로 이뤄져 있음.
 export const databaseConfig = {
   type: 'postgres', // 또는 'mysql', 'sqlite' 등
   host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT) || 5432,
+  port: parseInt(process.env.DB_PORT || '5432'),
   username: process.env.DB_USERNAME || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
   database: process.env.DB_NAME || 'checkuree_db',
