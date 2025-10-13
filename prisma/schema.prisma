@@ -18,8 +18,8 @@ model USERS {
   username   String    @unique
   password   String
   name       String
-  createdAt  DateTime  @db.Date
-  deletedAt  DateTime? @db.Date
+  createdAt  DateTime  @default(now()) @db.Date
+  deletedAt  DateTime? @default(now()) @db.Date
 
   // 1:N로 변경
   BOOKS      BOOKS[]

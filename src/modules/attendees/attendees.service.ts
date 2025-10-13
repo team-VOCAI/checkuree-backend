@@ -110,6 +110,31 @@ export class AttendeesService {
     return attendees;
   }
 
+  async searchAttendees(bookId: number, searchName: string) {
+    const query = searchName.trim();
+
+    if (!query) {
+      return [];
+    }
+
+    const attendees = await this.prisma.aTTENDEES.findMany({
+      where: {
+        bookId,
+        name: {
+          contains: query,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        attendeeId: true,
+        name: true,
+      },
+      orderBy: { attendeeId: 'asc' },
+    });
+
+    return attendees;
+  }
+
   async updateAttendee(
     bookId: number,
     attendeeId: number,
@@ -173,5 +198,38 @@ export class AttendeesService {
         `Grade (${label}) with id ${gradeId} not found`,
       );
     }
+  }
+
+  async recommendAttendeeName(bookId: number, name: string) {
+    const baseName = name.trim();
+
+    if (!baseName) {
+      return baseName;
+    }
+
+    const candidates = await this.prisma.aTTENDEES.findMany({
+      where: {
+        bookId,
+        name: {
+          startsWith: baseName,
+          mode: 'insensitive',
+        },
+      },
+      select: {
+        name: true,
+      },
+    });
+
+    const escaped = baseName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`^${escaped}(\\d+)?$`, 'i');
+    const matches = candidates
+      .map((candidate) => candidate.name)
+      .filter((candidateName) => pattern.test(candidateName));
+
+    if (matches.length === 0) {
+      return baseName;
+    }
+
+    return `${baseName}${matches.length + 1}`;
   }
 }

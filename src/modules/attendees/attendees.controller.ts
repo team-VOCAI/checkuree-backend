@@ -14,6 +14,8 @@ import { AttendeesService } from './attendees.service';
 import { CreateAttendeeDto } from './dto/create-attendee.dto';
 import { UpdateAttendeeDto } from './dto/update-attendee.dto';
 import { UpdateAttendeeStatusDto } from './dto/update-attendee-status.dto';
+import { SearchAttendeeDto } from './dto/search-attendee.dto';
+import { RecommendAttendeeNameDto } from './dto/recommend-attendee-name.dto';
 
 @Controller('book/:bookId/attendee')
 @UsePipes(
@@ -85,5 +87,37 @@ export class AttendeesController {
     );
 
     return ResponseUtil.success(attendee, 'Attendee status updated successfully');
+  }
+
+  @Post('search')
+  async searchAttendees(
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Body() body: SearchAttendeeDto,
+  ) {
+    const attendees = await this.attendeesService.searchAttendees(
+      bookId,
+      body.searchName,
+    );
+
+    return ResponseUtil.success(
+      attendees,
+      'Attendee search results retrieved successfully',
+    );
+  }
+
+  @Post('recommend-name')
+  async recommendAttendeeName(
+    @Param('bookId', ParseIntPipe) bookId: number,
+    @Body() body: RecommendAttendeeNameDto,
+  ) {
+    const recommendedName = await this.attendeesService.recommendAttendeeName(
+      bookId,
+      body.name,
+    );
+
+    return ResponseUtil.success(
+      { name: recommendedName },
+      'Attendee name recommendation generated successfully',
+    );
   }
 }
