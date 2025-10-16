@@ -13,6 +13,7 @@ import { PrismaModule } from './prisma/prisma.module';
     BookModule,
     PrismaModule,
     // TODO: UserModule, CheckitemModule 추가 예정
+    // TODO: ChecklistModule, UserModule, CheckitemModule 추가 예정
   ],
   controllers: [AppController],
   providers: [AppService],
