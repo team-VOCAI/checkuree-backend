@@ -1,6 +1,9 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AttendeeAssociateDto, CreateAttendeeDto } from './dto/create-attendee.dto';
+import {
+  AttendeeAssociateDto,
+  CreateAttendeeDto,
+} from './dto/create-attendee.dto';
 import { UpdateAttendeeDto } from './dto/update-attendee.dto';
 import { UpdateAttendeeStatusDto } from './dto/update-attendee-status.dto';
 
@@ -11,12 +14,9 @@ export class AttendeesService {
   constructor(private readonly prisma: PrismaService) {}
 
   // 학생 등록 로직을 수행하는 메서드입니다.
-  async createAttendee(
-    bookId: number,
-    dto: CreateAttendeeDto,
-  ) {
+  async createAttendee(bookId: number, dto: CreateAttendeeDto) {
     // 1. 해당 출석부(book)가 존재하는지 확인합니다.
-    const book = await this.prisma.bOOKS.findUnique({
+    const book = await this.prisma.books.findUnique({
       where: { bookId },
     });
 
@@ -35,7 +35,7 @@ export class AttendeesService {
     );
 
     // 4. Prisma Client를 이용해 ATTENDEES 레코드를 생성합니다.
-    const attendee = await this.prisma.aTTENDEES.create({
+    const attendee = await this.prisma.attendees.create({
       data: {
         bookId,
         name: dto.name,
@@ -66,7 +66,7 @@ export class AttendeesService {
   }
 
   async getAttendee(bookId: number, attendeeId: number) {
-    const attendee = await this.prisma.aTTENDEES.findFirst({
+    const attendee = await this.prisma.attendees.findFirst({
       where: { attendeeId, bookId },
       include: {
         book: true,
@@ -89,7 +89,9 @@ export class AttendeesService {
           return null;
         }
       })
-      .filter((associate): associate is AttendeeAssociateDto => associate !== null);
+      .filter(
+        (associate): associate is AttendeeAssociateDto => associate !== null,
+      );
 
     return {
       ...attendee,
@@ -98,7 +100,7 @@ export class AttendeesService {
   }
 
   async listAttendees(bookId: number) {
-    const attendees = await this.prisma.aTTENDEES.findMany({
+    const attendees = await this.prisma.attendees.findMany({
       where: { bookId },
       select: {
         attendeeId: true,
@@ -117,7 +119,7 @@ export class AttendeesService {
       return [];
     }
 
-    const attendees = await this.prisma.aTTENDEES.findMany({
+    const attendees = await this.prisma.attendees.findMany({
       where: {
         bookId,
         name: {
@@ -140,7 +142,7 @@ export class AttendeesService {
     attendeeId: number,
     dto: UpdateAttendeeDto,
   ) {
-    const existing = await this.prisma.aTTENDEES.findFirst({
+    const existing = await this.prisma.attendees.findFirst({
       where: { attendeeId, bookId },
     });
 
@@ -150,7 +152,7 @@ export class AttendeesService {
       );
     }
 
-    await this.prisma.aTTENDEES.update({
+    await this.prisma.attendees.update({
       where: { attendeeId },
       data: {
         name: dto.name,
@@ -160,11 +162,8 @@ export class AttendeesService {
     return this.getAttendee(bookId, attendeeId);
   }
 
-  async updateAttendeeStatus(
-    bookId: number,
-    dto: UpdateAttendeeStatusDto,
-  ) {
-    const existing = await this.prisma.aTTENDEES.findFirst({
+  async updateAttendeeStatus(bookId: number, dto: UpdateAttendeeStatusDto) {
+    const existing = await this.prisma.attendees.findFirst({
       where: { attendeeId: dto.attendeeId, bookId },
     });
 
@@ -174,7 +173,7 @@ export class AttendeesService {
       );
     }
 
-    await this.prisma.aTTENDEES.update({
+    await this.prisma.attendees.update({
       where: { attendeeId: dto.attendeeId },
       data: {
         status: dto.status,
@@ -189,7 +188,7 @@ export class AttendeesService {
     gradeId: number,
     label: 'initial' | 'current',
   ): Promise<void> {
-    const grade = await this.prisma.gRADES.findUnique({
+    const grade = await this.prisma.grades.findUnique({
       where: { gradeId },
     });
 
@@ -207,7 +206,7 @@ export class AttendeesService {
       return baseName;
     }
 
-    const candidates = await this.prisma.aTTENDEES.findMany({
+    const candidates = await this.prisma.attendees.findMany({
       where: {
         bookId,
         name: {
