@@ -14,12 +14,14 @@ generator client {
 }
 
 model users {
-  userId     Int       @id @default(autoincrement())
-  username   String    @unique
-  password   String
-  name       String
-  createdAt  DateTime  @default(now()) @db.Date
-  deletedAt  DateTime? @default(now()) @db.Date
+
+  userId       Int       @id @default(autoincrement())
+  username     String    @unique
+  password     String
+  name         String
+  refreshToken String?   @unique
+  createdAt    DateTime  @default(now()) @db.Date
+  deletedAt    DateTime? @db.Date
 
   // 1:N로 변경
   books      books[]
