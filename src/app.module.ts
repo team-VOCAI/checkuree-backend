@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { BookModule } from './modules/book/book.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -11,7 +13,9 @@ import { AuthModule } from './modules/auth/auth.module';
       envFilePath: '.env',
     }),
     AuthModule,
-    // TODO: ChecklistModule, UserModule, CheckitemModule 추가 예정
+    BookModule,
+    PrismaModule,
+    // TODO: UserModule, CheckitemModule 추가 예정
   ],
   controllers: [AppController],
   providers: [AppService],
