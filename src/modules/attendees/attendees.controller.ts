@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Put,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -32,13 +33,10 @@ export class AttendeesController {
   async listAttendees(@Param('bookId', ParseIntPipe) bookId: number) {
     const attendees = await this.attendeesService.listAttendees(bookId);
 
-    return ResponseUtil.success(
-      attendees,
-      'Attendees retrieved successfully',
-    );
+    return ResponseUtil.success(attendees, 'Attendees retrieved successfully');
   }
 
-  @Post('new')
+  @Put('new')
   async createAttendee(
     @Param('bookId', ParseIntPipe) bookId: number,
     @Body() body: CreateAttendeeDto,
@@ -86,7 +84,10 @@ export class AttendeesController {
       body,
     );
 
-    return ResponseUtil.success(attendee, 'Attendee status updated successfully');
+    return ResponseUtil.success(
+      attendee,
+      'Attendee status updated successfully',
+    );
   }
 
   @Post('search')
